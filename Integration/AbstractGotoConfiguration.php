@@ -183,7 +183,6 @@ abstract class AbstractGotoConfiguration implements ConfigTokenPersistenceInterf
             },
             function (): bool { //  Delete tokens
                 $standingKeys = $this->getApiKeys();
-                unset($standingKeys['access_token']);
                 $configuration = $this->getIntegrationEntity();
                 $configuration->setApiKeys($standingKeys);
                 $this->helper->saveIntegrationConfiguration($configuration);
