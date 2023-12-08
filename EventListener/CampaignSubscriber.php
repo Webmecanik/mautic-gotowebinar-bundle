@@ -40,13 +40,7 @@ class CampaignSubscriber implements EventSubscriberInterface
         return [
             CampaignEvents::CAMPAIGN_ON_BUILD       => ['onCampaignBuild', 0],
             CitrixEvents::ON_CITRIX_WEBINAR_EVENT   => ['onWebinarEvent', 0],
-            CitrixEvents::ON_CITRIX_MEETING_EVENT   => ['onMeetingEvent', 0],
-            CitrixEvents::ON_CITRIX_TRAINING_EVENT  => ['onTrainingEvent', 0],
-            CitrixEvents::ON_CITRIX_ASSIST_EVENT    => ['onAssistEvent', 0],
             CitrixEvents::ON_CITRIX_WEBINAR_ACTION  => ['onWebinarAction', 0],
-            CitrixEvents::ON_CITRIX_MEETING_ACTION  => ['onMeetingAction', 0],
-            CitrixEvents::ON_CITRIX_TRAINING_ACTION => ['onTrainingAction', 0],
-            CitrixEvents::ON_CITRIX_ASSIST_ACTION   => ['onAssistAction', 0],
         ];
     }
 
@@ -55,21 +49,6 @@ class CampaignSubscriber implements EventSubscriberInterface
     public function onWebinarAction(CampaignExecutionEvent $event): void
     {
         $event->setResult($this->onCitrixAction(CitrixProducts::GOTOWEBINAR, $event));
-    }
-
-    public function onMeetingAction(CampaignExecutionEvent $event): void
-    {
-        $event->setResult($this->onCitrixAction(CitrixProducts::GOTOMEETING, $event));
-    }
-
-    public function onTrainingAction(CampaignExecutionEvent $event): void
-    {
-        $event->setResult($this->onCitrixAction(CitrixProducts::GOTOTRAINING, $event));
-    }
-
-    public function onAssistAction(CampaignExecutionEvent $event): void
-    {
-        $event->setResult($this->onCitrixAction(CitrixProducts::GOTOASSIST, $event));
     }
 
     /**
@@ -122,21 +101,6 @@ class CampaignSubscriber implements EventSubscriberInterface
         $event->setResult($this->onCitrixEvent(CitrixProducts::GOTOWEBINAR, $event));
     }
 
-    public function onMeetingEvent(CampaignExecutionEvent $event): void
-    {
-        $event->setResult($this->onCitrixEvent(CitrixProducts::GOTOMEETING, $event));
-    }
-
-    public function onTrainingEvent(CampaignExecutionEvent $event): void
-    {
-        $event->setResult($this->onCitrixEvent(CitrixProducts::GOTOTRAINING, $event));
-    }
-
-    public function onAssistEvent(CampaignExecutionEvent $event): void
-    {
-        $event->setResult($this->onCitrixEvent(CitrixProducts::GOTOASSIST, $event));
-    }
-
     /**
      * @param string $product
      *
@@ -186,19 +150,9 @@ class CampaignSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $eventNames = [
-            CitrixProducts::GOTOWEBINAR  => CitrixEvents::ON_CITRIX_WEBINAR_EVENT,
-            CitrixProducts::GOTOMEETING  => CitrixEvents::ON_CITRIX_MEETING_EVENT,
-            CitrixProducts::GOTOTRAINING => CitrixEvents::ON_CITRIX_TRAINING_EVENT,
-            CitrixProducts::GOTOASSIST   => CitrixEvents::ON_CITRIX_ASSIST_EVENT,
-        ];
+        $eventNames = [CitrixProducts::GOTOWEBINAR  => CitrixEvents::ON_CITRIX_WEBINAR_EVENT];
 
-        $actionNames = [
-            CitrixProducts::GOTOWEBINAR  => CitrixEvents::ON_CITRIX_WEBINAR_ACTION,
-            CitrixProducts::GOTOMEETING  => CitrixEvents::ON_CITRIX_MEETING_ACTION,
-            CitrixProducts::GOTOTRAINING => CitrixEvents::ON_CITRIX_TRAINING_ACTION,
-            CitrixProducts::GOTOASSIST   => CitrixEvents::ON_CITRIX_ASSIST_ACTION,
-        ];
+        $actionNames = [CitrixProducts::GOTOWEBINAR  => CitrixEvents::ON_CITRIX_WEBINAR_ACTION];
 
         foreach ($activeProducts as $product) {
             $event->addCondition(

@@ -57,10 +57,6 @@ class FormSubscriber implements EventSubscriberInterface
         return [
             FormEvents::FORM_ON_BUILD                    => ['onFormBuilder', 0],
             CitrixEvents::ON_WEBINAR_REGISTER_ACTION     => ['onWebinarRegister', 0],
-            CitrixEvents::ON_MEETING_START_ACTION        => ['onMeetingStart', 0],
-            CitrixEvents::ON_TRAINING_REGISTER_ACTION    => ['onTrainingRegister', 0],
-            CitrixEvents::ON_TRAINING_START_ACTION       => ['onTrainingStart', 0],
-            CitrixEvents::ON_ASSIST_REMOTE_ACTION        => ['onAssistRemote', 0],
             CitrixEvents::ON_FORM_VALIDATE_ACTION        => ['onFormValidate', 0],
             FormEvents::FORM_PRE_SAVE                    => ['onFormPreSave', 0],
             PluginEvents::PLUGIN_ON_INTEGRATION_REQUEST  => ['onRequest', 0],

@@ -24,6 +24,5 @@ return function (ContainerConfigurator $configurator) {
     $services->load('MauticPlugin\\MauticCitrixBundle\\', '../')
         ->exclude('../{'.implode(',', [...MauticCoreExtension::DEFAULT_EXCLUDES, ...$excludes]).'}');
 
-    $services->alias('mautic.gotomeeting.configuration', GotoMeetingConfiguration::class);
     $services->alias('mautic.gotowebinar.configuration', GotoWebinarConfiguration::class);
 };
