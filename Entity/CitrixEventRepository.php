@@ -127,7 +127,7 @@ class CitrixEventRepository extends CommonRepository
      *
      * @return array
      */
-    protected function addCatchAllWhereClause($q, $filter)
+    protected function addCatchAllWhereClause($q, $filter): array
     {
         return $this->addStandardCatchAllWhereClause($q, $filter, ['c.product', 'c.email', 'c.eventType', 'c.eventName']);
     }
@@ -137,7 +137,7 @@ class CitrixEventRepository extends CommonRepository
      *
      * @return array
      */
-    protected function addSearchCommandWhereClause($q, $filter)
+    protected function addSearchCommandWhereClause($q, $filter): array
     {
         return $this->addStandardSearchCommandWhereClause($q, $filter);
     }
@@ -145,7 +145,7 @@ class CitrixEventRepository extends CommonRepository
     /**
      * @return array
      */
-    public function getSearchCommands()
+    public function getSearchCommands(): array
     {
         return $this->getStandardSearchCommands();
     }
@@ -153,7 +153,7 @@ class CitrixEventRepository extends CommonRepository
     /**
      * @return string
      */
-    protected function getDefaultOrder()
+    protected function getDefaultOrder(): array
     {
         return [
             [$this->getTableAlias().'.eventDate', 'ASC'],

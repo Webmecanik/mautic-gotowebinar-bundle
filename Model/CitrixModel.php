@@ -11,13 +11,11 @@ use Mautic\CoreBundle\Model\FormModel;
 use Mautic\CoreBundle\Security\Permissions\CorePermissions;
 use Mautic\CoreBundle\Translation\Translator;
 use Mautic\LeadBundle\Entity\Lead;
-use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\MauticCitrixBundle\CitrixEvents;
 use MauticPlugin\MauticCitrixBundle\Entity\CitrixEvent;
 use MauticPlugin\MauticCitrixBundle\Entity\CitrixEventRepository;
 use MauticPlugin\MauticCitrixBundle\Entity\CitrixEventTypes;
 use MauticPlugin\MauticCitrixBundle\Event\CitrixEventUpdateEvent;
-use MauticPlugin\MauticCitrixBundle\Helper\CitrixHelper;
 use MauticPlugin\MauticCitrixBundle\Helper\CitrixProducts;
 use MauticPlugin\MauticCitrixBundle\Helper\CitrixServiceHelper;
 use Psr\Log\LoggerInterface;
@@ -30,19 +28,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class CitrixModel extends FormModel
 {
-    /** @var LoggerInterface */
-    protected $logger;
-
-//    public function __construct(
-//        private LeadModel           $leadModel,
-//        private CitrixServiceHelper $serviceHelper,
-//        protected EntityManagerInterface                   $em,
-//        LoggerInterface             $logger,
-//    )
-//    {
-//        $this->logger = $logger;
-//    }
-
     public function __construct(
         EntityManagerInterface $em,
         CorePermissions $security,

@@ -25,8 +25,6 @@ class OAuth2ThreeLeggedCredentials implements AccessTokenInterface, CodeInterfac
     ) {
     }
 
-    // Getters
-
     public function getAccessToken(): ?string
     {
         return $this->access_token;
@@ -96,7 +94,6 @@ class OAuth2ThreeLeggedCredentials implements AccessTokenInterface, CodeInterfac
     }
 
     // Setters
-
     public function setAccessToken(?string $access_token): self
     {
         $this->access_token = $access_token;
@@ -114,13 +111,6 @@ class OAuth2ThreeLeggedCredentials implements AccessTokenInterface, CodeInterfac
     public function setCode(?string $code): self
     {
         $this->code = $code;
-
-        return $this;
-    }
-
-    public function setExpiresAt(?int $expires_at): OAuth2ThreeLeggedCredentials
-    {
-        $this->expires_at = $expires_at;
 
         return $this;
     }

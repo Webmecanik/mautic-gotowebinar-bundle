@@ -6,8 +6,6 @@ namespace MauticPlugin\MauticCitrixBundle\Helper;
 
 use Mautic\IntegrationsBundle\Exception\IntegrationNotFoundException;
 use Mautic\PluginBundle\Exception\ApiErrorException;
-use MauticPlugin\MauticCitrixBundle\Integration\GotoMeetingConfiguration;
-use MauticPlugin\MauticCitrixBundle\Integration\GotomeetingIntegration;
 use MauticPlugin\MauticCitrixBundle\Integration\GotoWebinarConfiguration;
 use MauticPlugin\MauticCitrixBundle\Integration\GotowebinarIntegration;
 use Psr\Http\Message\ResponseInterface;
@@ -19,7 +17,6 @@ use Symfony\Component\Routing\RouterInterface;
 class CitrixServiceHelper
 {
     public function __construct(
-        private GotoMeetingConfiguration $gotoMeetingConfiguration,
         private GotoWebinarConfiguration $gotoWebinarConfiguration,
         private RouterInterface $router,
         private LoggerInterface $logger,
@@ -65,7 +62,6 @@ class CitrixServiceHelper
          */
         $onlyUpcoming = false;
         $endpointUri  = match ($product) {
-            GotomeetingIntegration::GOTO_PRODUCT_NAME => $onlyUpcoming ? 'upcomingMeetings' : 'historicalMeetings', // v1
             GotowebinarIntegration::GOTO_PRODUCT_NAME => '/organizers/{organizerKey}/webinars', // v2
         };
 
@@ -76,17 +72,12 @@ class CitrixServiceHelper
         $endpointUri = str_replace(array_keys($replacements), array_values($replacements), $endpointUri);
 
         $dateFormat = match ($product) {
-            GotomeetingIntegration::GOTO_PRODUCT_NAME => 'Y-m-d\TH:i:s\Z',
             GotowebinarIntegration::GOTO_PRODUCT_NAME => 'c',
         };
 
         $UTCZone = new \DateTimeZone('UTC');
 
         $parameters = match ($product) {
-            GotomeetingIntegration::GOTO_PRODUCT_NAME => [
-                'startDate' => $onlyUpcoming ? (new \DateTimeImmutable('now', $UTCZone))->format($dateFormat) : (new \DateTimeImmutable('-10 year', $UTCZone))->format($dateFormat),
-                'endDate'   => (new \DateTimeImmutable('+10 year', $UTCZone))->format($dateFormat),
-            ],
             GotowebinarIntegration::GOTO_PRODUCT_NAME => [
                 'fromTime' => $onlyUpcoming ? (new \DateTimeImmutable('now', $UTCZone))->format($dateFormat) : (new \DateTimeImmutable('-10 year', $UTCZone))->format($dateFormat),
                 'toTime'   => (new \DateTimeImmutable('+10 year', $UTCZone))->format($dateFormat),
@@ -99,10 +90,6 @@ class CitrixServiceHelper
         $parsed = $this->parseResponse($response);
 
         $list = match ($product) {
-            GotomeetingIntegration::GOTO_PRODUCT_NAME => array_combine(
-                array_column($parsed, 'meetingId'),
-                array_column($parsed, 'subject'),
-            ),
             GotowebinarIntegration::GOTO_PRODUCT_NAME => array_combine(
                 array_column($parsed['_embedded']['webinars'] ?? [], 'webinarId'),
                 array_column($parsed['_embedded']['webinars'] ?? [], 'subject'),
@@ -128,7 +115,7 @@ class CitrixServiceHelper
         };
 
         $apiUrl = match ($product) {
-            GotomeetingIntegration::GOTO_PRODUCT_NAME => '/webinars/'.$productId.'/registrants?resendConfirmation=true',
+            GotowebinarIntegration::GOTO_PRODUCT_NAME => '/webinars/'.$productId.'/registrants?resendConfirmation=true',
         };
 
         try {
@@ -148,42 +135,6 @@ class CitrixServiceHelper
         return $parsed['joinUrl'];
     }
 
-    public function startToProduct($product, $productId, $email, $firstname, $lastname): string
-    {
-        $config = $this->getIntegrationConfig($product);
-        $client = $config->getHttpClient();
-
-        try {
-            switch ($product) {
-                case CitrixProducts::GOTOMEETING:
-                case CitrixProducts::GOTOTRAINING:
-                    $path     = CitrixProducts::GOTOMEETING === $product ? 'meetings' : 'trainings';
-                    $response = $this->parseResponse($client->get("{$path}/{$productId}/start"));
-
-                    return $response['hostURL'] ?? '';
-                case CitrixProducts::GOTOASSIST:
-                    $params = [
-                        'sessionStatusCallbackUrl' => $this->router->generate('mautic_citrix_sessionchanged', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                        'sessionType'              => 'screen_sharing',
-                        'partnerObject'            => '',
-                        'partnerObjectUrl'         => '',
-                        'customerName'             => "{$firstname} {$lastname}",
-                        'customerEmail'            => $email,
-                        'machineUuid'              => '',
-                    ];
-
-                    $response = $this->parseResponse($client->post('sessions', $params));
-
-                    return $response['startScreenSharing']['launchUrl'] ?? '';
-                default:
-                    throw new BadRequestHttpException(sprintf('This action is not available for product %s.', $product));
-            }
-        } catch (\Exception $ex) {
-            $this->logger->error('startProduct: '.$ex->getMessage());
-            throw new BadRequestHttpException($ex->getMessage());
-        }
-    }
-
     public function getRegistrants(string $product, mixed $productId)
     {
         $config = $this->getIntegrationConfig($product);
@@ -191,7 +142,6 @@ class CitrixServiceHelper
 
         $path = match ($product) {
             CitrixProducts::GOTOWEBINAR  => 'organizers/{organizerKey}/webinars/{webinarKey}/registrants',
-            CitrixProducts::GOTOTRAINING => $product.'s/'.$productId.'/registrants',
             default                      => throw new \InvalidArgumentException("Invalid product: $product"),
         };
 
@@ -215,7 +165,6 @@ class CitrixServiceHelper
         //  the api v1 is a hack, the same endpoint on v2 returns 403, it works for registrants though
         $path = match ($product) {
             CitrixProducts::GOTOWEBINAR => $config->getApiV1Url().'organizers/{organizerKey}/webinars/{productKey}/attendees',
-            CitrixProducts::GOTOMEETING => 'meetings/{productKey}/attendees',
             default                     => throw new BadRequestHttpException(sprintf('This action is not available for product %s.', $product))
         };
 
@@ -262,7 +211,6 @@ class CitrixServiceHelper
     private function getIntegrationConfig(string $productName)
     {
         return match ($productName) {
-            GotomeetingIntegration::GOTO_PRODUCT_NAME => $this->gotoMeetingConfiguration,
             GotowebinarIntegration::GOTO_PRODUCT_NAME => $this->gotoWebinarConfiguration,
             default                                   => throw new IntegrationNotFoundException(sprintf('Integration %s not found', $productName)),
         };
