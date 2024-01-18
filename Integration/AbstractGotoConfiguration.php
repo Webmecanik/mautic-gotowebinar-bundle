@@ -17,6 +17,7 @@ use Mautic\IntegrationsBundle\Exception\PluginNotConfiguredException;
 use Mautic\IntegrationsBundle\Helper\IntegrationsHelper;
 use Mautic\PluginBundle\Entity\Integration;
 use MauticPlugin\MauticCitrixBundle\Integration\Auth\OAuth2ThreeLeggedCredentials;
+use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -24,7 +25,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 abstract class AbstractGotoConfiguration implements ConfigTokenPersistenceInterface
 {
-    private \Symfony\Component\Cache\Adapter\TagAwareAdapterInterface $cache;
+    private TagAwareAdapterInterface $cache;
 
     public function __construct(
         private IntegrationsHelper $helper,
@@ -89,7 +90,11 @@ abstract class AbstractGotoConfiguration implements ConfigTokenPersistenceInterf
 
     public function isPublished(): bool
     {
-        return $this->getIntegrationEntity()->isPublished();
+        try {
+            return $this->getIntegrationEntity()->isPublished();
+        } catch (IntegrationNotFoundException $e) {
+            return false;
+        }
     }
 
     public function isConfigured(): bool
@@ -169,7 +174,7 @@ abstract class AbstractGotoConfiguration implements ConfigTokenPersistenceInterf
         $state   = hash('sha1', uniqid((string)random_int(0, mt_getrandmax())));
         $session = $this->requestStack->getSession();
 
-        $session->set($this->getIntegrationName().'_csrf_token', $state); // TODO not working
+        $session->set($this->getIntegrationName().'_csrf_token', $state);
         $session->save();
 
         return $state;
@@ -210,7 +215,7 @@ abstract class AbstractGotoConfiguration implements ConfigTokenPersistenceInterf
             function (): bool {
                 $keys = $this->getApiKeys() ?? null;
 
-                return $keys['access_token'] ?? null !== null;
+                return ($keys['access_token'] ?? null) !== null;
             }
         );
     }
@@ -237,7 +242,7 @@ abstract class AbstractGotoConfiguration implements ConfigTokenPersistenceInterf
         }
 
         return $this->cache->get('citrix_user_data', function (ItemInterface $item){
-            $item->expiresAfter(3600);
+            $item->expiresAfter(24*60*60);
 
             $response       = $this->getHttpClient()->get('/identity/v1/Users/me');
             $this->userData = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);

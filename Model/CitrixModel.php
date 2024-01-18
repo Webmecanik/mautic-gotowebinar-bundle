@@ -102,9 +102,9 @@ class CitrixModel extends FormModel
      * @param string $product
      * @param string $email
      *
-     * @return array
+     * @return array<
      */
-    public function getEventsByLeadEmail($product, $email)
+    public function getEventsByLeadEmail(string $product, string $email): array
     {
         if (!CitrixProducts::isValidValue($product)) {
             return []; // is not a valid citrix product
