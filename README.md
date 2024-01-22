@@ -1,8 +1,16 @@
-# M5 port of MauticCitrixBundle
+### Mautic GotoWebinar Plugin based on MauticCitrixBundle
 
-Mautic GotoWebinar Plugin
+### Installation
+This plugin requires https://github.com/mautic/mautic/pull/12760 to be merged in order to function properly. 
 
-> Plugin reuses configuration keys provided by MauticCitrixBundle for simplicity
+You need to unpack this plugin into plugins/MauticCitrixBundle folder and run `php app/console mautic:plugins:reload` to register it.
 
-This is definitely not nice. It's just a port with minimal improvements.
-The only thing well improved is the API client
+You do not need to reauthorize the plugin if you already have Citrix plugin installed.
+
+### Notes 
+
+Plugin reuses configuration keys provided by MauticCitrixBundle for simplicity
+Plugin implements only GotoWebinar API, not GotoMeeting or GotoTraining
+
+
+
